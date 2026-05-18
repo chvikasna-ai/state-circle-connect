@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export const Route = createFileRoute("/_app/qa/$id")({ component: QuestionPage });
+export const Route = createFileRoute("/(app)/qa/$id")({ component: QuestionPage });
 
 function QuestionPage() {
   const { id } = useParams({ from: "/_app/qa/$id" });

@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/_app/rooms/$slug")({ component: RoomPage });
+export const Route = createFileRoute("/(app)/rooms/$slug")({ component: RoomPage });
 
 function RoomPage() {
   const { slug } = useParams({ from: "/_app/rooms/$slug" });

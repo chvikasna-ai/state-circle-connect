@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Newspaper, Heart, Star, Megaphone } from "lucide-react";
 
-export const Route = createFileRoute("/_app/news")({ component: News });
+export const Route = createFileRoute("/(app)/news")({ component: News });
 
 const REACTIONS = [
   { key: "like", label: "Helpful", icon: Heart },

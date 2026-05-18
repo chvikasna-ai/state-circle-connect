@@ -4,7 +4,7 @@ import { stateName } from "@/lib/states";
 import { Home, MessageSquare, HelpCircle, Newspaper, CalendarDays, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/_app")({ component: AppLayout });
+export const Route = createFileRoute("/(app)")({ component: AppLayout });
 
 const nav = [
   { to: "/feed", label: "Feed", icon: Home },
