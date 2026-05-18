@@ -1,10 +1,9 @@
-import { createFileRoute, Outlet, Link, Navigate, useLocation } from "@tanstack/react-router";
+import { Link, Navigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { stateName } from "@/lib/states";
 import { Home, MessageSquare, HelpCircle, Newspaper, CalendarDays, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export const Route = createFileRoute("/_app")({ component: AppLayout });
+import type { ReactNode } from "react";
 
 const nav = [
   { to: "/feed", label: "Feed", icon: Home },
@@ -14,7 +13,7 @@ const nav = [
   { to: "/events", label: "Events", icon: CalendarDays },
 ] as const;
 
-function AppLayout() {
+export function AppShell({ children }: { children: ReactNode }) {
   const { user, profile, loading, roles, signOut } = useAuth();
   const loc = useLocation();
   if (loading) return null;
@@ -60,7 +59,7 @@ function AppLayout() {
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
-        <Outlet />
+        {children}
       </main>
     </div>
   );

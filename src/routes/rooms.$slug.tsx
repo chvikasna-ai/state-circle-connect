@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { AppShell } from "@/components/AppShell";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/_app/rooms/$slug")({ component: RoomPage });
+export const Route = createFileRoute("/rooms/$slug")({ component: () => (<AppShell><RoomPage /></AppShell>) });
 
 function RoomPage() {
   const { slug } = useParams({ from: "/_app/rooms/$slug" });

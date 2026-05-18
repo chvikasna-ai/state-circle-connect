@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/AppShell";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { Newspaper, Heart, Star, Megaphone } from "lucide-react";
 
-export const Route = createFileRoute("/_app/news")({ component: News });
+export const Route = createFileRoute("/news")({ component: () => (<AppShell><News /></AppShell>) });
 
 const REACTIONS = [
   { key: "like", label: "Helpful", icon: Heart },
