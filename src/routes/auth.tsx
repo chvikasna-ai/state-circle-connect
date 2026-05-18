@@ -30,7 +30,7 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
-  if (user) return <Navigate to="/feed" />;
+  if (user) return <Navigate to="/onboarding" />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
