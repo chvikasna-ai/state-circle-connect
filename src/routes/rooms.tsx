@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppShell } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare } from "lucide-react";
 
-export const Route = createFileRoute("/rooms")({ component: Rooms });
+export const Route = createFileRoute("/rooms")({ component: () => (<AppShell><Rooms /></AppShell>) });
 
 function Rooms() {
   const { data, isLoading } = useQuery({

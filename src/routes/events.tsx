@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/AppShell";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CalendarDays, MapPin, Check, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/events")({ component: Events });
+export const Route = createFileRoute("/events")({ component: () => (<AppShell><Events /></AppShell>) });
 
 function Events() {
   const { user, profile, roles } = useAuth();

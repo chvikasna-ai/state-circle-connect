@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppShell } from "@/components/AppShell";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -6,7 +7,7 @@ import { stateName } from "@/lib/states";
 import { formatDistanceToNow } from "date-fns";
 import { Newspaper, HelpCircle, CalendarDays, MessageSquare } from "lucide-react";
 
-export const Route = createFileRoute("/feed")({ component: Feed });
+export const Route = createFileRoute("/feed")({ component: () => (<AppShell><Feed /></AppShell>) });
 
 type FeedItem =
   | { kind: "news"; id: string; created_at: string; headline: string; summary: string }
