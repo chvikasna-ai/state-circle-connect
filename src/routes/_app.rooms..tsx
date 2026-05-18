@@ -1,0 +1,99 @@
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+
+export const Route = createFileRoute("/_app/rooms/")({ component: RoomPage });
+
+function RoomPage() {
+  const { slug } = useParams({ from: "/_app/rooms/$slug" });
+  const { profile, user } = useAuth();
+  const qc = useQueryClient();
+  const [text, setText] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const roomQ = useQuery({
+    queryKey: ["room", slug],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("rooms").select("*").eq("slug", slug).single();
+      if (error) throw error; return data;
+    },
+  });
+
+  const msgsQ = useQuery({
+    queryKey: ["room-msgs", roomQ.data?.id],
+    enabled: !!roomQ.data?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("room_messages")
+        .select("id,body,created_at,user_id,profiles!inner(display_name)")
+        .eq("room_id", roomQ.data!.id)
+        .order("created_at", { ascending: true })
+        .limit(200);
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  useEffect(() => {
+    if (!roomQ.data?.id) return;
+    const channel = supabase
+      .channel(`room-${roomQ.data.id}`)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "room_messages", filter: `room_id=eq.${roomQ.data.id}` },
+        () => qc.invalidateQueries({ queryKey: ["room-msgs", roomQ.data!.id] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [roomQ.data?.id, qc]);
+
+  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [msgsQ.data]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = text.trim();
+    if (!body || !roomQ.data || !user || !profile) return;
+    if (body.length > 1000) { toast.error("Keep it under 1000 characters"); return; }
+    setText("");
+    const { error } = await supabase.from("room_messages").insert({
+      room_id: roomQ.data.id, user_id: user.id, state_code: profile.state_code, body,
+    });
+    if (error) toast.error(error.message);
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-180px)] flex-col">
+      <div className="mb-4">
+        <Link to="/rooms" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> All rooms
+        </Link>
+        <h1 className="mt-1 font-display text-2xl">{roomQ.data?.name ?? "Room"}</h1>
+        <p className="text-sm text-muted-foreground">{roomQ.data?.description}</p>
+      </div>
+      <div ref={scrollRef} className="flex-1 overflow-y-auto rounded-xl border border-border bg-card p-4 space-y-3">
+        {msgsQ.isLoading && <p className="text-sm text-muted-foreground">Loading…</p>}
+        {msgsQ.data?.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No messages yet. Start a thread.</p>}
+        {msgsQ.data?.map(m => {
+          const mine = m.user_id === user?.id;
+          // @ts-expect-error joined relation
+          const name = m.profiles?.display_name as string;
+          return (
+            <div key={m.id} className={"flex " + (mine ? "justify-end" : "justify-start")}>
+              <div className={"max-w-[75%] rounded-2xl px-4 py-2 " + (mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                {!mine && <div className="text-xs font-medium opacity-70">{name}</div>}
+                <p className="text-sm whitespace-pre-wrap">{m.body}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <form onSubmit={send} className="mt-3 flex gap-2">
+        <Input value={text} onChange={e => setText(e.target.value)} placeholder="Stay on topic, be kind." maxLength={1000} />
+        <Button type="submit">Send</Button>
+      </form>
+    </div>
+  );
+}
