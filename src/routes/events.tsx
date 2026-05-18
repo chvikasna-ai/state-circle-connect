@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CalendarDays, MapPin, Check, Clock } from "lucide-react";
 
-export const Route = createFileRoute("/(app)/events")({ component: Events });
+export const Route = createFileRoute("/events")({ component: Events });
 
 function Events() {
   const { user, profile, roles } = useAuth();

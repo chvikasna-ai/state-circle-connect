@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare } from "lucide-react";
 
-export const Route = createFileRoute("/(app)/rooms")({ component: Rooms });
+export const Route = createFileRoute("/rooms")({ component: Rooms });
 
 function Rooms() {
   const { data, isLoading } = useQuery({

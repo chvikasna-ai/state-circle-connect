@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { HelpCircle, Plus } from "lucide-react";
 
-export const Route = createFileRoute("/(app)/qa")({ component: QAList });
+export const Route = createFileRoute("/qa")({ component: QAList });
 
 function QAList() {
   const { user, profile } = useAuth();
