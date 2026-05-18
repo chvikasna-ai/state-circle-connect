@@ -33,11 +33,11 @@ function Onboarding() {
     const parsed = schema.safeParse({ display_name: name, state_code: state });
     if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setBusy(true);
-    const { error } = await supabase.from("profiles").insert({
+    const { error } = await supabase.from("profiles").upsert({
       id: user.id,
       display_name: parsed.data.display_name,
       state_code: parsed.data.state_code,
-    });
+    }, { onConflict: "id" });
     if (error) { toast.error(error.message); setBusy(false); return; }
     await refreshProfile();
     toast.success(`Welcome to your ${parsed.data.state_code} circle!`);
