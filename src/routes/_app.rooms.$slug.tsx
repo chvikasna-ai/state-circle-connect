@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/_app/rooms/")({ component: RoomPage });
+export const Route = createFileRoute("/_app/rooms/$slug")({ component: RoomPage });
 
 function RoomPage() {
   const { slug } = useParams({ from: "/_app/rooms/$slug" });
@@ -31,12 +31,17 @@ function RoomPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("room_messages")
-        .select("id,body,created_at,user_id,profiles!inner(display_name)")
+        .select("id,body,created_at,user_id")
         .eq("room_id", roomQ.data!.id)
         .order("created_at", { ascending: true })
         .limit(200);
       if (error) throw error;
-      return data;
+      const userIds = Array.from(new Set(data.map(m => m.user_id)));
+      const { data: profs } = userIds.length
+        ? await supabase.from("profiles").select("id,display_name").in("id", userIds)
+        : { data: [] };
+      const nameMap = new Map((profs ?? []).map(p => [p.id, p.display_name]));
+      return data.map(m => ({ ...m, display_name: nameMap.get(m.user_id) ?? "Member" }));
     },
   });
 
@@ -50,7 +55,9 @@ function RoomPage() {
     return () => { supabase.removeChannel(channel); };
   }, [roomQ.data?.id, qc]);
 
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [msgsQ.data]);
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [msgsQ.data]);
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,12 +85,10 @@ function RoomPage() {
         {msgsQ.data?.length === 0 && <p className="text-sm text-muted-foreground text-center py-10">No messages yet. Start a thread.</p>}
         {msgsQ.data?.map(m => {
           const mine = m.user_id === user?.id;
-          // @ts-expect-error joined relation
-          const name = m.profiles?.display_name as string;
           return (
             <div key={m.id} className={"flex " + (mine ? "justify-end" : "justify-start")}>
               <div className={"max-w-[75%] rounded-2xl px-4 py-2 " + (mine ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                {!mine && <div className="text-xs font-medium opacity-70">{name}</div>}
+                {!mine && <div className="text-xs font-medium opacity-70">{m.display_name}</div>}
                 <p className="text-sm whitespace-pre-wrap">{m.body}</p>
               </div>
             </div>

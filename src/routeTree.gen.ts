@@ -15,7 +15,7 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRoomsRouteImport } from './routes/_app.rooms'
 import { Route as AppFeedRouteImport } from './routes/_app.feed'
-import { Route as AppRoomsRouteImport } from './routes/_app.rooms.'
+import { Route as AppRoomsSlugRouteImport } from './routes/_app.rooms.$slug'
 
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
@@ -46,9 +46,9 @@ const AppFeedRoute = AppFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => AppRoute,
 } as any)
-const AppRoomsRoute = AppRoomsRouteImport.update({
-  id: '/',
-  path: '/',
+const AppRoomsSlugRoute = AppRoomsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
   getParentRoute: () => AppRoomsRoute,
 } as any)
 
@@ -58,14 +58,15 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/feed': typeof AppFeedRoute
   '/rooms': typeof AppRoomsRouteWithChildren
-  '/rooms/': typeof AppRoomsRoute
+  '/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/feed': typeof AppFeedRoute
-  '/rooms': typeof AppRoomsRoute
+  '/rooms': typeof AppRoomsRouteWithChildren
+  '/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,13 +76,13 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/_app/feed': typeof AppFeedRoute
   '/_app/rooms': typeof AppRoomsRouteWithChildren
-  '/_app/rooms/': typeof AppRoomsRoute
+  '/_app/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/feed' | '/rooms' | '/rooms/'
+  fullPaths: '/' | '/auth' | '/onboarding' | '/feed' | '/rooms' | '/rooms/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/feed' | '/rooms'
+  to: '/' | '/auth' | '/onboarding' | '/feed' | '/rooms' | '/rooms/$slug'
   id:
     | '__root__'
     | '/'
@@ -90,7 +91,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/_app/feed'
     | '/_app/rooms'
-    | '/_app/rooms/'
+    | '/_app/rooms/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,22 +145,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFeedRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/rooms/': {
-      id: '/_app/rooms/'
-      path: '/'
-      fullPath: '/rooms/'
-      preLoaderRoute: typeof AppRoomsRouteImport
+    '/_app/rooms/$slug': {
+      id: '/_app/rooms/$slug'
+      path: '/$slug'
+      fullPath: '/rooms/$slug'
+      preLoaderRoute: typeof AppRoomsSlugRouteImport
       parentRoute: typeof AppRoomsRoute
     }
   }
 }
 
 interface AppRoomsRouteChildren {
-  AppRoomsRoute: typeof AppRoomsRoute
+  AppRoomsSlugRoute: typeof AppRoomsSlugRoute
 }
 
 const AppRoomsRouteChildren: AppRoomsRouteChildren = {
-  AppRoomsRoute: AppRoomsRoute,
+  AppRoomsSlugRoute: AppRoomsSlugRoute,
 }
 
 const AppRoomsRouteWithChildren = AppRoomsRoute._addFileChildren(
