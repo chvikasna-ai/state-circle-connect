@@ -6,7 +6,7 @@ import { stateName } from "@/lib/states";
 import { formatDistanceToNow } from "date-fns";
 import { Newspaper, HelpCircle, CalendarDays, MessageSquare } from "lucide-react";
 
-export const Route = createFileRoute("/(app)/feed")({ component: Feed });
+export const Route = createFileRoute("/feed")({ component: Feed });
 
 type FeedItem =
   | { kind: "news"; id: string; created_at: string; headline: string; summary: string }
