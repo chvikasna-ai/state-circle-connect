@@ -9,38 +9,181 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRoomsRouteImport } from './routes/_app.rooms'
+import { Route as AppQaRouteImport } from './routes/_app.qa'
+import { Route as AppNewsRouteImport } from './routes/_app.news'
+import { Route as AppFeedRouteImport } from './routes/_app.feed'
+import { Route as AppEventsRouteImport } from './routes/_app.events'
+import { Route as AppRoomsSlugRouteImport } from './routes/_app.rooms.$slug'
+import { Route as AppQaIdRouteImport } from './routes/_app.qa.$id'
 
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/_app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoomsRoute = AppRoomsRouteImport.update({
+  id: '/rooms',
+  path: '/rooms',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppQaRoute = AppQaRouteImport.update({
+  id: '/qa',
+  path: '/qa',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNewsRoute = AppNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFeedRoute = AppFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEventsRoute = AppEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRoomsSlugRoute = AppRoomsSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => AppRoomsRoute,
+} as any)
+const AppQaIdRoute = AppQaIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppQaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/events': typeof AppEventsRoute
+  '/feed': typeof AppFeedRoute
+  '/news': typeof AppNewsRoute
+  '/qa': typeof AppQaRouteWithChildren
+  '/rooms': typeof AppRoomsRouteWithChildren
+  '/qa/$id': typeof AppQaIdRoute
+  '/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/events': typeof AppEventsRoute
+  '/feed': typeof AppFeedRoute
+  '/news': typeof AppNewsRoute
+  '/qa': typeof AppQaRouteWithChildren
+  '/rooms': typeof AppRoomsRouteWithChildren
+  '/qa/$id': typeof AppQaIdRoute
+  '/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/_app/events': typeof AppEventsRoute
+  '/_app/feed': typeof AppFeedRoute
+  '/_app/news': typeof AppNewsRoute
+  '/_app/qa': typeof AppQaRouteWithChildren
+  '/_app/rooms': typeof AppRoomsRouteWithChildren
+  '/_app/qa/$id': typeof AppQaIdRoute
+  '/_app/rooms/$slug': typeof AppRoomsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/events'
+    | '/feed'
+    | '/news'
+    | '/qa'
+    | '/rooms'
+    | '/qa/$id'
+    | '/rooms/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/events'
+    | '/feed'
+    | '/news'
+    | '/qa'
+    | '/rooms'
+    | '/qa/$id'
+    | '/rooms/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/auth'
+    | '/onboarding'
+    | '/_app/events'
+    | '/_app/feed'
+    | '/_app/news'
+    | '/_app/qa'
+    | '/_app/rooms'
+    | '/_app/qa/$id'
+    | '/_app/rooms/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app': {
+      id: '/_app'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +191,104 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/rooms': {
+      id: '/_app/rooms'
+      path: '/rooms'
+      fullPath: '/rooms'
+      preLoaderRoute: typeof AppRoomsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/qa': {
+      id: '/_app/qa'
+      path: '/qa'
+      fullPath: '/qa'
+      preLoaderRoute: typeof AppQaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/news': {
+      id: '/_app/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof AppNewsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/feed': {
+      id: '/_app/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof AppFeedRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/events': {
+      id: '/_app/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof AppEventsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/rooms/$slug': {
+      id: '/_app/rooms/$slug'
+      path: '/$slug'
+      fullPath: '/rooms/$slug'
+      preLoaderRoute: typeof AppRoomsSlugRouteImport
+      parentRoute: typeof AppRoomsRoute
+    }
+    '/_app/qa/$id': {
+      id: '/_app/qa/$id'
+      path: '/$id'
+      fullPath: '/qa/$id'
+      preLoaderRoute: typeof AppQaIdRouteImport
+      parentRoute: typeof AppQaRoute
+    }
   }
 }
 
+interface AppQaRouteChildren {
+  AppQaIdRoute: typeof AppQaIdRoute
+}
+
+const AppQaRouteChildren: AppQaRouteChildren = {
+  AppQaIdRoute: AppQaIdRoute,
+}
+
+const AppQaRouteWithChildren = AppQaRoute._addFileChildren(AppQaRouteChildren)
+
+interface AppRoomsRouteChildren {
+  AppRoomsSlugRoute: typeof AppRoomsSlugRoute
+}
+
+const AppRoomsRouteChildren: AppRoomsRouteChildren = {
+  AppRoomsSlugRoute: AppRoomsSlugRoute,
+}
+
+const AppRoomsRouteWithChildren = AppRoomsRoute._addFileChildren(
+  AppRoomsRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppEventsRoute: typeof AppEventsRoute
+  AppFeedRoute: typeof AppFeedRoute
+  AppNewsRoute: typeof AppNewsRoute
+  AppQaRoute: typeof AppQaRouteWithChildren
+  AppRoomsRoute: typeof AppRoomsRouteWithChildren
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppEventsRoute: AppEventsRoute,
+  AppFeedRoute: AppFeedRoute,
+  AppNewsRoute: AppNewsRoute,
+  AppQaRoute: AppQaRouteWithChildren,
+  AppRoomsRoute: AppRoomsRouteWithChildren,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
