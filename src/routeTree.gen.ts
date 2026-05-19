@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RoomsRouteImport } from './routes/rooms'
 import { Route as QaRouteImport } from './routes/qa'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NewsRouteImport } from './routes/news'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -28,6 +29,11 @@ const RoomsRoute = RoomsRouteImport.update({
 const QaRoute = QaRouteImport.update({
   id: '/qa',
   path: '/qa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/qa': typeof QaRouteWithChildren
   '/rooms': typeof RoomsRouteWithChildren
   '/qa/$id': typeof QaIdRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/qa': typeof QaRouteWithChildren
   '/rooms': typeof RoomsRouteWithChildren
   '/qa/$id': typeof QaIdRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/news': typeof NewsRoute
   '/onboarding': typeof OnboardingRoute
+  '/profile': typeof ProfileRoute
   '/qa': typeof QaRouteWithChildren
   '/rooms': typeof RoomsRouteWithChildren
   '/qa/$id': typeof QaIdRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/news'
     | '/onboarding'
+    | '/profile'
     | '/qa'
     | '/rooms'
     | '/qa/$id'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/news'
     | '/onboarding'
+    | '/profile'
     | '/qa'
     | '/rooms'
     | '/qa/$id'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/news'
     | '/onboarding'
+    | '/profile'
     | '/qa'
     | '/rooms'
     | '/qa/$id'
@@ -154,6 +166,7 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   NewsRoute: typeof NewsRoute
   OnboardingRoute: typeof OnboardingRoute
+  ProfileRoute: typeof ProfileRoute
   QaRoute: typeof QaRouteWithChildren
   RoomsRoute: typeof RoomsRouteWithChildren
 }
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       path: '/qa'
       fullPath: '/qa'
       preLoaderRoute: typeof QaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -260,9 +280,20 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   NewsRoute: NewsRoute,
   OnboardingRoute: OnboardingRoute,
+  ProfileRoute: ProfileRoute,
   QaRoute: QaRouteWithChildren,
   RoomsRoute: RoomsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

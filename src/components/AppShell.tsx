@@ -1,7 +1,7 @@
 import { Link, Navigate, useLocation } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { stateName } from "@/lib/states";
-import { Home, MessageSquare, HelpCircle, Newspaper, CalendarDays, LogOut, ShieldCheck } from "lucide-react";
+import { Home, MessageSquare, HelpCircle, Newspaper, LogOut, ShieldCheck, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { ReactNode } from "react";
 
@@ -10,7 +10,7 @@ const nav = [
   { to: "/rooms", label: "Rooms", icon: MessageSquare },
   { to: "/qa", label: "Q&A", icon: HelpCircle },
   { to: "/news", label: "News", icon: Newspaper },
-  { to: "/events", label: "Events", icon: CalendarDays },
+  { to: "/profile", label: "Profile", icon: UserCircle },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {

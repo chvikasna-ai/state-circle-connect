@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate, Link, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
-import { useAuth } from "@/lib/auth";
+import { findSavedLocalProfile, isLocalNicknameTaken, useAuth } from "@/lib/auth";
+import { US_STATES } from "@/lib/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,52 +15,40 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const schema = z.object({
-  email: z.string().trim().email().max(255),
-  password: z.string().min(6).max(72),
+const profileSchema = z.object({
+  display_name: z.string().trim().min(2).max(40),
+  state_code: z.string().length(2),
 });
 
 function AuthPage() {
-  const { user, loading } = useAuth();
-  const { mode } = Route.useSearch();
+  const { user, profile, loading, createLocalProfile } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [state, setState] = useState("");
   const [busy, setBusy] = useState(false);
+  const savedProfile = name && state ? findSavedLocalProfile(name, state) : null;
+  const nicknameTaken = name && state ? isLocalNicknameTaken(name, state) : false;
 
   if (loading) return null;
-  if (user) return <Navigate to="/onboarding" />;
+  if (user) return <Navigate to={profile ? "/feed" : "/onboarding"} />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = schema.safeParse({ email, password });
-    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: parsed.data.email, password: parsed.data.password,
-          options: { emailRedirectTo: window.location.origin },
-        });
-        if (error) throw error;
-        toast.success("Account created. Check your email if confirmation is required.");
-        navigate({ to: "/onboarding" });
-      } else {
-        const { error } = await supabase.auth.signInWithPassword(parsed.data);
-        if (error) throw error;
-        navigate({ to: "/feed" });
+      const parsed = profileSchema.safeParse({ display_name: name, state_code: state });
+      if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+      if (isLocalNicknameTaken(parsed.data.display_name, parsed.data.state_code)) {
+        toast.error("That nickname is already used. Add something to your name, like your city or a number.");
+        return;
       }
+
+      createLocalProfile(parsed.data);
+      toast.success(savedProfile ? "Welcome back!" : `Welcome to your ${parsed.data.state_code} circle!`);
+      navigate({ to: "/feed" });
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
     } finally { setBusy(false); }
-  };
-
-  const google = async () => {
-    setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (result.error) { toast.error("Google sign-in failed"); setBusy(false); return; }
-    if (result.redirected) return;
-    navigate({ to: "/feed" });
   };
 
   return (
@@ -72,36 +59,39 @@ function AuthPage() {
           <span className="font-display text-xl">State Circle</span>
         </Link>
         <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <h1 className="font-display text-2xl">{mode === "signup" ? "Join your state" : "Welcome back"}</h1>
+          <h1 className="font-display text-2xl">Join your state</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {mode === "signup" ? "Create your account to enter your state's circle." : "Sign in to your circle."}
+            No email needed. Enter this once, and we will remember it.
           </p>
-          <Button variant="outline" className="mt-6 w-full" onClick={google} disabled={busy}>
-            Continue with Google
-          </Button>
-          <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
-          </div>
-          <form onSubmit={submit} className="space-y-3">
+          <form onSubmit={submit} className="mt-6 space-y-3">
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <Label htmlFor="name">Display name</Label>
+              <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="What should neighbors call you?" required />
+              <p className={"mt-1 text-xs " + (nicknameTaken ? "text-destructive" : "text-muted-foreground")}>
+                {savedProfile
+                  ? "Welcome back. Use this same name and state to rejoin your saved profile."
+                  : nicknameTaken
+                    ? "That nickname is already used. Try adding your city, initials, or a number."
+                    : "Pick a nickname only you will use. If it is taken, add something to your name."}
+              </p>
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+              <Label htmlFor="state">Your state</Label>
+              <select
+                id="state"
+                value={state}
+                onChange={e => setState(e.target.value)}
+                className="mt-1 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none transition-colors focus-visible:ring-1 focus-visible:ring-ring"
+                required
+              >
+                <option value="">Pick your state</option>
+                {US_STATES.map(s => <option key={s.code} value={s.code}>{s.name}</option>)}
+              </select>
             </div>
             <Button type="submit" className="w-full" disabled={busy}>
-              {mode === "signup" ? "Create account" : "Sign in"}
+              Enter my circle
             </Button>
           </form>
-          <p className="mt-5 text-center text-sm text-muted-foreground">
-            {mode === "signup" ? (
-              <>Already a member? <Link to="/auth" search={{ mode: "signin" }} className="text-accent underline">Sign in</Link></>
-            ) : (
-              <>New here? <Link to="/auth" search={{ mode: "signup" }} className="text-accent underline">Create an account</Link></>
-            )}
-          </p>
         </div>
       </div>
     </div>

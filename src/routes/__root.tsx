@@ -16,9 +16,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "State Circle — Your State, Your Community" },
-      { name: "description", content: "A safe, state-only community to ask, share news, and find local events." },
+      { name: "description", content: "A safe, state-only community to ask questions, share news, and talk locally." },
       { property: "og:title", content: "State Circle" },
-      { property: "og:description", content: "State-only community: questions, news, and events from your neighbors." },
+      { property: "og:description", content: "State-only community: questions, news, and local conversation from your neighbors." },
       { property: "og:type", content: "website" },
     ],
     links: [
