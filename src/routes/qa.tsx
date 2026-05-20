@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { getLocalQuestions, saveLocalQuestion } from "@/lib/local-qa";
 import { isMessageAllowed } from "@/lib/moderation";
+import { stateName } from "@/lib/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,10 +26,16 @@ function QAList() {
   const [search, setSearch] = useState("");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["questions"],
+    queryKey: ["questions", profile?.state_code],
     queryFn: async () => {
-      const localQuestions = getLocalQuestions();
-      const { data, error } = await supabase.from("questions").select("*").order("created_at", { ascending: false }).limit(50);
+      const localQuestions = getLocalQuestions(profile?.state_code);
+      if (!profile?.state_code) return localQuestions;
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("state_code", profile.state_code)
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) return localQuestions;
       return [...localQuestions, ...(data ?? [])].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     },
@@ -70,7 +77,7 @@ function QAList() {
     }
 
     setTitle(""); setBody(""); setShowForm(false);
-    qc.invalidateQueries({ queryKey: ["questions"] });
+    qc.invalidateQueries({ queryKey: ["questions", profile.state_code] });
     toast.success("Question posted");
   };
 
@@ -79,7 +86,9 @@ function QAList() {
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-3xl">Local Q&A</h1>
-          <p className="mt-1 text-muted-foreground">Real questions, real answers from your state.</p>
+          <p className="mt-1 text-muted-foreground">
+            Questions for {stateName(profile?.state_code)} only. Other states have their own Q&A.
+          </p>
         </div>
         <Button onClick={() => setShowForm(v => !v)}><Plus className="h-4 w-4 mr-1" />Ask</Button>
       </div>

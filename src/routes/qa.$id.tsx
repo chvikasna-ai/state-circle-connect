@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { findLocalQuestion, getLocalAnswers, saveLocalAnswer } from "@/lib/local-qa";
@@ -17,25 +17,37 @@ function QuestionPage() {
   const { id } = useParams({ from: "/qa/$id" });
   const { user, profile, session } = useAuth();
   const qc = useQueryClient();
-  const localQuestion = findLocalQuestion(id);
+  const localQuestion = findLocalQuestion(id, profile?.state_code);
   const [body, setBody] = useState("");
-  const [localAnswers, setLocalAnswers] = useState(() => localQuestion ? getLocalAnswers(id) : []);
+  const [localAnswers, setLocalAnswers] = useState(() =>
+    localQuestion && profile?.state_code ? getLocalAnswers(profile.state_code, id) : [],
+  );
 
   const qQ = useQuery({
-    queryKey: ["q", id],
-    enabled: !localQuestion,
+    queryKey: ["q", id, profile?.state_code],
+    enabled: !localQuestion && !!profile?.state_code,
     queryFn: async () => {
-      const { data, error } = await supabase.from("questions").select("*").eq("id", id).single();
+      const { data, error } = await supabase
+        .from("questions")
+        .select("*")
+        .eq("id", id)
+        .eq("state_code", profile?.state_code ?? "")
+        .single();
       if (error) throw error;
       return data;
     },
   });
 
   const aQ = useQuery({
-    queryKey: ["answers", id],
-    enabled: !localQuestion,
+    queryKey: ["answers", id, profile?.state_code],
+    enabled: !localQuestion && !!profile?.state_code,
     queryFn: async () => {
-      const { data, error } = await supabase.from("answers").select("*").eq("question_id", id).order("created_at");
+      const { data, error } = await supabase
+        .from("answers")
+        .select("*")
+        .eq("question_id", id)
+        .eq("state_code", profile?.state_code ?? "")
+        .order("created_at");
       if (error) throw error;
       const ids = Array.from(new Set(data.map(a => a.user_id)));
       const { data: profs } = ids.length
@@ -45,6 +57,11 @@ function QuestionPage() {
       return data.map(a => ({ ...a, display_name: map.get(a.user_id) ?? "Member" }));
     },
   });
+
+  useEffect(() => {
+    if (!localQuestion || !profile?.state_code) return;
+    setLocalAnswers(getLocalAnswers(profile.state_code, id));
+  }, [id, localQuestion?.id, profile?.state_code]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +89,7 @@ function QuestionPage() {
       question_id: id, user_id: user.id, state_code: profile.state_code, body: trimmedBody,
     });
     if (error) { toast.error(error.message); return; }
-    setBody(""); qc.invalidateQueries({ queryKey: ["answers", id] });
+    setBody(""); qc.invalidateQueries({ queryKey: ["answers", id, profile.state_code] });
   };
 
   const question = localQuestion ?? qQ.data;

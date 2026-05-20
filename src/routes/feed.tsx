@@ -29,10 +29,11 @@ function Feed() {
   const { data, isLoading } = useQuery({
     queryKey: ["feed", profile?.state_code],
     queryFn: async (): Promise<FeedItem[]> => {
+      if (!profile?.state_code) return [];
       const [news, qs, msgs] = await Promise.all([
-        supabase.from("news_posts").select("id,created_at,headline,summary").order("created_at", { ascending: false }).limit(10),
-        supabase.from("questions").select("id,created_at,title,body").order("created_at", { ascending: false }).limit(10),
-        supabase.from("room_messages").select("id,created_at,body,room_id").order("created_at", { ascending: false }).limit(10),
+        supabase.from("news_posts").select("id,created_at,headline,summary").eq("state_code", profile.state_code).order("created_at", { ascending: false }).limit(10),
+        supabase.from("questions").select("id,created_at,title,body").eq("state_code", profile.state_code).order("created_at", { ascending: false }).limit(10),
+        supabase.from("room_messages").select("id,created_at,body,room_id").eq("state_code", profile.state_code).order("created_at", { ascending: false }).limit(10),
       ]);
       const items: FeedItem[] = [
         ...(news.data ?? []).map(n => ({ kind: "news" as const, ...n })),

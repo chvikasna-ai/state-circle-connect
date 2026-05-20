@@ -94,7 +94,9 @@ function Rooms() {
       {isLoading && <p className="text-sm text-muted-foreground">Loading rooms...</p>}
       {!isLoading && filteredRooms.length === 0 && (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-muted-foreground">
-          No rooms found for "{search.trim()}". Try another topic.
+          {search.trim()
+            ? `No rooms found for "${search.trim()}". Try another topic.`
+            : `No rooms in ${stateName(profile?.state_code)} yet. Add the first chat for this state.`}
         </div>
       )}
       <div className="grid gap-3 sm:grid-cols-2">
